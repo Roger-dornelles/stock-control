@@ -1,6 +1,7 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { AppDataSource } from "./connection/config/database";
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
@@ -17,6 +18,11 @@ async function bootstrap() {
 
 	await app.listen(3000);
 }
+
+AppDataSource.initialize()
+	.then(() => console.log("Connected to DB PostgreSQL"))
+	.catch((err) => console.error("DB Error:", err));
+
 bootstrap().catch((err) => {
 	console.error(err);
 	process.exit(1);
