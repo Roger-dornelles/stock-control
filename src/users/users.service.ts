@@ -13,20 +13,26 @@ export class UsersService {
 	) {}
 
 	async createUser(createUserDto: CreateUserDto) {
-		if (createUserDto.role !== "user" && createUserDto.role !== "admin") {
-			throw new NotFoundException("Função inválida. Deve ser 'usuário' ou 'administrador'.");
+		try {
+			if (createUserDto.role !== "user" && createUserDto.role !== "admin") {
+				throw new NotFoundException("Função inválida. Deve ser 'usuário' ou 'administrador'.");
+			}
+
+			const userExists = await this.userRepository.findOne({
+				where: { email: createUserDto.email },
+			});
+
+			if (userExists) {
+				throw new ConflictException("E-mail já cadastrado no sistema.");
+			}
+
+			createUserDto.password = await bcrypt.hashSync(createUserDto.password, 10);
+
+			const userCreated = this.userRepository.save(createUserDto);
+
+			return userCreated;
+		} catch (error) {
+			throw new Error("Erro ao criar usuário: " + error.message);
 		}
-
-		const userExists = await this.userRepository.findOne({
-			where: { email: createUserDto.email },
-		});
-
-		if (userExists) {
-			throw new ConflictException("E-mail já cadastrado no sistema.");
-		}
-
-		createUserDto.password = await bcrypt.hashSync(createUserDto.password, 10);
-
-		return "acess_token";
 	}
 }
