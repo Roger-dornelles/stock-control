@@ -1,4 +1,11 @@
-import { Injectable, NotFoundException, ConflictException } from "@nestjs/common";
+import {
+	Injectable,
+	NotFoundException,
+	ConflictException,
+	HttpException,
+	InternalServerErrorException,
+	BadRequestException,
+} from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
 import * as bcrypt from "bcrypt";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -32,7 +39,21 @@ export class UsersService {
 
 			return userCreated;
 		} catch (error) {
-			throw new Error("Erro ao criar usuário: " + error.message);
+			throw new ConflictException("Erro ao criar usuário ");
+		}
+	}
+
+	async findOneUserFromEmail(email: string): Promise<User | null> {
+		try {
+			const user = await this.userRepository.findOne({
+				where: { email: email },
+			});
+			if (!user || user === null) {
+				throw new NotFoundException("Usuário não encontrado.");
+			}
+			return user;
+		} catch (error) {
+			throw new InternalServerErrorException("Erro ao buscar usuário");
 		}
 	}
 }
