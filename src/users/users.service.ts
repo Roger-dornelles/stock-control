@@ -64,4 +64,22 @@ export class UsersService {
 			throw new InternalServerErrorException("Erro ao buscar usuário, tente novamente mais tarde.");
 		}
 	}
+
+	async findOneUserFromId(id: number): Promise<User> {
+		try {
+			const user = await this.userRepository.findOne({
+				where: { id },
+			});
+
+			if (!user) {
+				throw new NotFoundException("Usuário não encontrado");
+			}
+			return user;
+		} catch (error) {
+			if (error instanceof NotFoundException) {
+				throw error;
+			}
+			throw new InternalServerErrorException("Erro ao buscar usuário, tente novamente mais tarde.");
+		}
+	}
 }
