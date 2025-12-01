@@ -1,8 +1,17 @@
-import { Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import {
+	Get,
+	Injectable,
+	InternalServerErrorException,
+	NotFoundException,
+	Request,
+	UnauthorizedException,
+	UseGuards,
+} from "@nestjs/common";
 import { CreateAuthDto } from "./dto/create-auth.dto";
 import { UsersService } from "src/users/users.service";
 import { CreateAcessToken } from "./dto/createAcessToken.dto";
 import { JwtService } from "@nestjs/jwt";
+import { AuthGuard } from "./auth.guard";
 
 @Injectable()
 export class AuthService {
@@ -16,7 +25,7 @@ export class AuthService {
 			const user = await this.UserService.findOneUserFromEmail(userData.email);
 
 			if (!user) {
-				throw new UnauthorizedException({ message: "Usuario sem Autorização" });
+				throw new UnauthorizedException("Usuario sem Autorização");
 			}
 
 			const payload = { sub: user?.id, username: user?.username };
@@ -24,12 +33,16 @@ export class AuthService {
 			const accessToken = await this.jwtService.signAsync(payload);
 
 			if (!accessToken) {
-				throw new UnauthorizedException({ message: "Erro ao gerar token de acesso" });
+				throw new UnauthorizedException("Erro ao gerar token de acesso");
 			}
 
 			return accessToken;
 		} catch (error) {
-			throw new Error("Ocorreu um Erro => ", error.message);
+			if (error instanceof NotFoundException) {
+				throw error;
+			}
+
+			throw new InternalServerErrorException("Erro ao buscar usuário, tente novamente mais tarde.");
 		}
 	}
 
@@ -40,9 +53,15 @@ export class AuthService {
 		});
 
 		if (!acessToken) {
-			throw new UnauthorizedException({ message: "Usuario sem Autorização" });
+			throw new UnauthorizedException("Usuario sem Autorização");
 		}
 
 		return acessToken;
+	}
+
+	@UseGuards(AuthGuard)
+	@Get("profile")
+	getProfile(@Request() req) {
+		return req.user;
 	}
 }

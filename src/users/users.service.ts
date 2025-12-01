@@ -43,17 +43,25 @@ export class UsersService {
 		}
 	}
 
-	async findOneUserFromEmail(email: string): Promise<User | null> {
+	async findOneUserFromEmail(email: string): Promise<User> {
 		try {
+			const normalizedEmail = email.trim().toLowerCase();
+
 			const user = await this.userRepository.findOne({
-				where: { email: email },
+				where: { email: normalizedEmail },
 			});
-			if (!user || user === null) {
-				throw new NotFoundException("Usuário não encontrado.");
+
+			if (!user) {
+				throw new NotFoundException("Usuário não encontrado");
 			}
+
 			return user;
 		} catch (error) {
-			throw new InternalServerErrorException("Erro ao buscar usuário");
+			if (error instanceof NotFoundException) {
+				throw error;
+			}
+
+			throw new InternalServerErrorException("Erro ao buscar usuário, tente novamente mais tarde.");
 		}
 	}
 }
