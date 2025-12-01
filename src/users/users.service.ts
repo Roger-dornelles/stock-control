@@ -2,7 +2,6 @@ import {
 	Injectable,
 	NotFoundException,
 	ConflictException,
-	HttpException,
 	InternalServerErrorException,
 	BadRequestException,
 } from "@nestjs/common";
@@ -11,6 +10,7 @@ import * as bcrypt from "bcrypt";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "./entities/user.entity";
 import { Repository } from "typeorm";
+import { UpdateUserDto } from "./dto/update-user.dto";
 
 @Injectable()
 export class UsersService {
@@ -39,7 +39,11 @@ export class UsersService {
 
 			return userCreated;
 		} catch (error) {
-			throw new ConflictException("Erro ao criar usuário ");
+			if (error instanceof NotFoundException) {
+				throw error;
+			}
+
+			throw new InternalServerErrorException("Erro ao criar usuário, tente novamente mais tarde.");
 		}
 	}
 
@@ -80,6 +84,28 @@ export class UsersService {
 				throw error;
 			}
 			throw new InternalServerErrorException("Erro ao buscar usuário, tente novamente mais tarde.");
+		}
+	}
+
+	async updateInformationUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+		try {
+			const user = await this.userRepository.findOne({ where: { id: Number(id) } });
+
+			if (!user) {
+				throw new NotFoundException("Usuário não encontrado");
+			}
+
+			const updatedUser = Object.assign(user, updateUserDto);
+
+			return this.userRepository.save(updatedUser);
+		} catch (error) {
+			if (error instanceof NotFoundException) {
+				throw error;
+			}
+
+			throw new InternalServerErrorException(
+				"Erro ao atualizar informações do usuário, tente novamente mais tarde."
+			);
 		}
 	}
 }
