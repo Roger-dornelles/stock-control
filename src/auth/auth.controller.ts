@@ -1,7 +1,15 @@
 import { Controller, Post, Body, Get, UseGuards, Request } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { CreateAuthDto } from "./dto/create-auth.dto";
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import {
+	ApiBody,
+	ApiOperation,
+	ApiResponse,
+	ApiTags,
+	ApiBearerAuth,
+	ApiOkResponse,
+	ApiUnauthorizedResponse,
+} from "@nestjs/swagger";
 
 import { AuthGuard } from "./auth.guard";
 
@@ -38,6 +46,13 @@ export class AuthController {
 
 	@UseGuards(AuthGuard)
 	@Get("profile")
+	@ApiBearerAuth()
+	@ApiOkResponse({
+		description: "Retorna os dados do usuário autenticado",
+	})
+	@ApiUnauthorizedResponse({
+		description: "Token inválido ou ausente",
+	})
 	getProfile(@Request() req) {
 		return req.user;
 	}
