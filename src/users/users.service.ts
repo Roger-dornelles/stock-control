@@ -11,6 +11,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "./entities/user.entity";
 import { Repository } from "typeorm";
 import { UpdateUserDto } from "./dto/update-user.dto";
+import { use } from "passport";
 
 @Injectable()
 export class UsersService {
@@ -49,10 +50,8 @@ export class UsersService {
 
 	async findOneUserFromEmail(email: string): Promise<User> {
 		try {
-			const normalizedEmail = email.trim().toLowerCase();
-
 			const user = await this.userRepository.findOne({
-				where: { email: normalizedEmail },
+				where: { email },
 			});
 
 			if (!user) {
@@ -95,6 +94,10 @@ export class UsersService {
 				throw new NotFoundException("Usuário não encontrado");
 			}
 
+			if (updateUserDto.password) {
+				updateUserDto.password = await bcrypt.hashSync(updateUserDto.password, 10);
+			}
+
 			const updatedUser = Object.assign(user, updateUserDto);
 
 			return this.userRepository.save(updatedUser);
@@ -105,6 +108,27 @@ export class UsersService {
 
 			throw new InternalServerErrorException(
 				"Erro ao atualizar informações do usuário, tente novamente mais tarde."
+			);
+		}
+	}
+
+	async removeUser(id: number) {
+		try {
+			const user = await this.userRepository.findOne({ where: { id } });
+			if (!user) {
+				throw new NotFoundException("Usuário não encontrado");
+			}
+			await this.userRepository.remove(user);
+			return {
+				statusCode: 200,
+				message: "Usuário excluído com sucesso",
+			};
+		} catch (error) {
+			if (error instanceof NotFoundException) {
+				throw error;
+			}
+			throw new InternalServerErrorException(
+				"Erro ao remover usuário, tente novamente mais tarde."
 			);
 		}
 	}

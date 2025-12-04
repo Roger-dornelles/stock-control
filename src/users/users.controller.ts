@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards } from "@nestjs/common";
+import { Controller, Get, Post, Body, Patch, Param, UseGuards, Delete } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
@@ -75,5 +75,28 @@ export class UsersController {
 	@UseGuards(AuthGuard)
 	upadetUser(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
 		return this.usersService.updateInformationUser(id, updateUserDto);
+	}
+
+	@Delete(":id")
+	@ApiOperation({
+		summary: "Excluir usuário por ID",
+	})
+	@ApiParam({
+		name: "id",
+		type: String,
+		description: "ID do usuário",
+		example: "8fd0a8b2-5240-4a8e-bc4c-9d09bfb78111",
+	})
+	@ApiResponse({
+		status: 200,
+		description: "Usuário excluído com sucesso",
+	})
+	@ApiResponse({
+		status: 401,
+		description: "Usuario não encontrado.",
+	})
+	@UseGuards(AuthGuard)
+	removeUser(@Param("id") id: string) {
+		return this.usersService.removeUser(+id);
 	}
 }
