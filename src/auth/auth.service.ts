@@ -13,7 +13,6 @@ import { CreateAcessToken } from "./dto/createAcessToken.dto";
 import { JwtService } from "@nestjs/jwt";
 import { AuthGuard } from "./auth.guard";
 import * as bcrypt from "bcrypt";
-import { on } from "events";
 
 @Injectable()
 export class AuthService {
