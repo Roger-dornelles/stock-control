@@ -59,6 +59,7 @@ export class ProductsController {
 		return this.productsService.updateProduct(id, updateProductDto);
 	}
 
+	@Delete(":id")
 	@ApiOperation({
 		summary: "Excluir um produto",
 		description: "Excluir um produto no sistema.",
@@ -78,14 +79,38 @@ export class ProductsController {
 		description: "Credenciais inválidas",
 	})
 	@UseGuards(AuthGuard)
-	@Delete(":id")
 	deleteAProductById(@Param("id") id: number) {
 		return this.productsService.removeProductById(id);
 	}
 
-	@Get()
-	findAll() {
-		return this.productsService.findAll();
+	@Get(":id")
+	@ApiOperation({
+		summary: "Listar produtos por usuario",
+		description: "Listar produtos por usuario no sistema.",
+	})
+	@ApiParam({
+		name: "id",
+		type: Number,
+		description: "ID do usuario",
+		example: "8fd0a8b2-5240-4a8e-bc4c-9d09bfb78111",
+	})
+	@ApiParam({
+		name: "id",
+		type: Number,
+		description: "ID do produto",
+		example: "8fd0a8b2-5240-4a8e-bc4c-9d09bfb78111",
+	})
+	@ApiBody({
+		description: "Detalhes do produto",
+		type: CreateProductDto,
+	})
+	@ApiResponse({
+		status: 401,
+		description: "Credenciais inválidas",
+	})
+	@UseGuards(AuthGuard)
+	findAllProductsByUser(@Param("id") userId: number, @Req() req) {
+		return this.productsService.findAllProductsByUser(userId, req);
 	}
 
 	@Get(":id")

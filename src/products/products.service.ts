@@ -2,7 +2,7 @@ import { Injectable, InternalServerErrorException, NotFoundException } from "@ne
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { UsersService } from "../users/users.service";
-import { Repository } from "typeorm";
+import { Not, Repository } from "typeorm";
 import { Product } from "./entities/product.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 
@@ -90,8 +90,32 @@ export class ProductsService {
 		}
 	}
 
-	findAll() {
-		return `This action returns all products`;
+	async findAllProductsByUser(userId: number, req): Promise<Product[]> {
+		try {
+			if (!userId) {
+				throw new NotFoundException("ID do usuário não informado");
+			}
+
+			const user = await this.userService.findOneUserFromId(req.user.id);
+
+			if (user.id !== userId) {
+				throw new NotFoundException("Usuário não encontrado");
+			}
+
+			const products = await this.ProductRepository.find({ where: { userId } });
+
+			if (!products) {
+				throw new NotFoundException("Produtos não encontrados para o usuário informado");
+			}
+
+			return products;
+		} catch (error) {
+			if (error instanceof NotFoundException) {
+				throw new NotFoundException(error.message);
+			}
+
+			throw new InternalServerErrorException("Erro ao listar produtos, tente novamente mais tarde");
+		}
 	}
 
 	findOne(id: number) {
