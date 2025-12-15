@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param, Delete, UseGuards, Req, Patch } fro
 import { ProductsService } from "./products.service";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
-import { ApiBody, ApiOperation, ApiResponse } from "@nestjs/swagger";
+import { ApiBody, ApiOperation, ApiParam, ApiResponse } from "@nestjs/swagger";
 import { AuthGuard } from "src/auth/auth.guard";
 
 @Controller("products")
@@ -31,10 +31,56 @@ export class ProductsController {
 		return this.productsService.createProduct(req, createProductDto);
 	}
 
-	@UseGuards(AuthGuard)
 	@Patch(":id")
+	@ApiOperation({
+		summary: "Atualizar parte do produto",
+		description: "Atualizar um produto no sistema.",
+	})
+	@ApiParam({
+		name: "id",
+		type: Number,
+		description: "ID do produto",
+		example: "8fd0a8b2-5240-4a8e-bc4c-9d09bfb78111",
+	})
+	@ApiResponse({
+		status: 200,
+		description: "Produto atualizado com sucesso",
+	})
+	@ApiResponse({
+		status: 401,
+		description: "Credenciais inválidas",
+	})
+	@ApiBody({
+		description: "Detalhes do produto",
+		type: CreateProductDto,
+	})
+	@UseGuards(AuthGuard)
 	updateProduct(@Param("id") id: number, @Body() updateProductDto: UpdateProductDto) {
 		return this.productsService.updateProduct(id, updateProductDto);
+	}
+
+	@ApiOperation({
+		summary: "Excluir um produto",
+		description: "Excluir um produto no sistema.",
+	})
+	@ApiParam({
+		name: "id",
+		type: Number,
+		description: "ID do produto",
+		example: "8fd0a8b2-5240-4a8e-bc4c-9d09bfb78111",
+	})
+	@ApiResponse({
+		status: 200,
+		description: "Produto excluido com sucesso",
+	})
+	@ApiResponse({
+		status: 401,
+		description: "Credenciais inválidas",
+	})
+	@UseGuards(AuthGuard)
+	@Delete(":id")
+	deleteAProductById(@Param("id") id: number) {
+		return this.productsService.removeProductById(id);
 	}
 
 	@Get()
@@ -45,10 +91,5 @@ export class ProductsController {
 	@Get(":id")
 	findOne(@Param("id") id: string) {
 		return this.productsService.findOne(+id);
-	}
-
-	@Delete(":id")
-	remove(@Param("id") id: string) {
-		return this.productsService.remove(+id);
 	}
 }
