@@ -70,15 +70,31 @@ export class ProductsService {
 		}
 	}
 
+	async removeProductById(id: number): Promise<{ message: string }> {
+		try {
+			if (!id) {
+				throw new NotFoundException("ID do produto não informado");
+			}
+			const product = await this.ProductRepository.findOne({ where: { id } });
+
+			if (!product) {
+				throw new NotFoundException("Produto não encontrado");
+			}
+			this.ProductRepository.delete(product.id);
+			return { message: "Produto excluido com sucesso" };
+		} catch (error) {
+			if (error instanceof NotFoundException) {
+				throw new NotFoundException(error.message);
+			}
+			throw new InternalServerErrorException("Erro ao excluir produto, tente novamente mais tarde");
+		}
+	}
+
 	findAll() {
 		return `This action returns all products`;
 	}
 
 	findOne(id: number) {
 		return `This action returns a #${id} product`;
-	}
-
-	remove(id: number) {
-		return `This action removes a #${id} product`;
 	}
 }
