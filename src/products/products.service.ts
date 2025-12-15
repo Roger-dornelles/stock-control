@@ -44,16 +44,38 @@ export class ProductsService {
 		}
 	}
 
+	async updateProduct(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
+		try {
+			if (!id) {
+				throw new NotFoundException("ID do produto não informado");
+			}
+
+			const productSaveBD = await this.ProductRepository.findOne({ where: { id } });
+			if (!productSaveBD) {
+				throw new NotFoundException("Produto não encontrado");
+			}
+
+			const updateProduct = { ...updateProductDto, updatedAt: new Date() };
+
+			const updateProducts = Object.assign(productSaveBD, updateProduct);
+
+			return await this.ProductRepository.save(updateProducts);
+		} catch (error) {
+			if (error instanceof NotFoundException) {
+				throw new NotFoundException(error.message);
+			}
+			throw new InternalServerErrorException(
+				"Erro ao atualizar produto, tente novamente mais tarde"
+			);
+		}
+	}
+
 	findAll() {
 		return `This action returns all products`;
 	}
 
 	findOne(id: number) {
 		return `This action returns a #${id} product`;
-	}
-
-	update(id: number, updateProductDto: UpdateProductDto) {
-		return `This action updates a #${id} product`;
 	}
 
 	remove(id: number) {
