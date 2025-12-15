@@ -35,4 +35,10 @@ export class Product {
 		name: "created_at",
 	})
 	createdAt: Date;
+
+	@CreateDateColumn({
+		type: "timestamp",
+		name: "updated_at",
+	})
+	updatedAt: Date;
 }
