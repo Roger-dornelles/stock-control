@@ -118,7 +118,7 @@ export class ProductsService {
 		}
 	}
 
-	findOne(id: number) {
-		return `This action returns a #${id} product`;
+	async findAllProducts(): Promise<Product[]> {
+		return await this.ProductRepository.find();
 	}
 }
