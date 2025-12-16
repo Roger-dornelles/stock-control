@@ -119,6 +119,6 @@ export class ProductsService {
 	}
 
 	async findAllProducts(): Promise<Product[]> {
-		return this.ProductRepository.find();
+		return await this.ProductRepository.find();
 	}
 }
