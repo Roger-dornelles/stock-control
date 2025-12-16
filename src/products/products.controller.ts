@@ -94,12 +94,6 @@ export class ProductsController {
 		description: "ID do usuario",
 		example: "8fd0a8b2-5240-4a8e-bc4c-9d09bfb78111",
 	})
-	@ApiParam({
-		name: "id",
-		type: Number,
-		description: "ID do produto",
-		example: "8fd0a8b2-5240-4a8e-bc4c-9d09bfb78111",
-	})
 	@ApiBody({
 		description: "Detalhes do produto",
 		type: CreateProductDto,
@@ -113,8 +107,21 @@ export class ProductsController {
 		return this.productsService.findAllProductsByUser(userId, req);
 	}
 
-	@Get(":id")
-	findOne(@Param("id") id: string) {
-		return this.productsService.findOne(+id);
+	@Get()
+	@ApiOperation({
+		summary: "Listar todos os produtos",
+		description: "Listar todos os produtos do sistema.",
+	})
+	@ApiBody({
+		description: "Detalhes dos produtos",
+		type: CreateProductDto,
+	})
+	@ApiResponse({
+		status: 401,
+		description: "Credenciais inválidas",
+	})
+	@UseGuards(AuthGuard)
+	findAllProducts() {
+		return this.productsService.findAllProducts();
 	}
 }
