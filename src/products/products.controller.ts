@@ -31,7 +31,7 @@ export class ProductsController {
 		return this.productsService.createProduct(req, createProductDto);
 	}
 
-	@Patch(":id")
+	@Patch("id")
 	@ApiOperation({
 		summary: "Atualizar parte do produto",
 		description: "Atualizar um produto no sistema.",
@@ -59,7 +59,7 @@ export class ProductsController {
 		return this.productsService.updateProduct(id, updateProductDto);
 	}
 
-	@Delete(":id")
+	@Delete("id")
 	@ApiOperation({
 		summary: "Excluir um produto",
 		description: "Excluir um produto no sistema.",
@@ -83,7 +83,7 @@ export class ProductsController {
 		return this.productsService.removeProductById(id);
 	}
 
-	@Get(":id")
+	@Get("id")
 	@ApiOperation({
 		summary: "Listar produtos por usuario",
 		description: "Listar produtos por usuario no sistema.",
@@ -105,6 +105,30 @@ export class ProductsController {
 	@UseGuards(AuthGuard)
 	findAllProductsByUser(@Param("id") userId: number, @Req() req) {
 		return this.productsService.findAllProductsByUser(userId, req);
+	}
+
+	@Get(":category")
+	@ApiOperation({
+		summary: "Listar produtos por categoria ",
+		description: "Listar produtos por categoria no sistema.",
+	})
+	@ApiParam({
+		name: "category",
+		type: String,
+		description: "Categoria do produto",
+		example: "Bazar",
+	})
+	@ApiBody({
+		description: "Detalhes dos produto",
+		type: CreateProductDto,
+	})
+	@ApiResponse({
+		status: 401,
+		description: "Credenciais inválidas",
+	})
+	@UseGuards(AuthGuard)
+	findAllProductsByCategory(@Param("category") category: string) {
+		return this.productsService.findAllProductsByCategory(category);
 	}
 
 	@Get()

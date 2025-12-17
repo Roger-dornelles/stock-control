@@ -121,4 +121,26 @@ export class ProductsService {
 	async findAllProducts(): Promise<Product[]> {
 		return await this.ProductRepository.find();
 	}
+
+	async findAllProductsByCategory(category: string): Promise<Product[]> {
+		try {
+			if (!category) {
+				throw new NotFoundException("Categoria não informada");
+			}
+
+			const products = await this.ProductRepository.find({ where: { categoryProduct: category } });
+
+			if (!products) {
+				throw new NotFoundException("Nenhum produto encontrado para a categoria informada");
+			}
+
+			return products;
+		} catch (error) {
+			if (error instanceof NotFoundException) {
+				throw new NotFoundException(error.message);
+			}
+
+			throw new InternalServerErrorException("Erro ao listar produtos, tente novamente mais tarde");
+		}
+	}
 }
