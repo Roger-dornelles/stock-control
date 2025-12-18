@@ -31,7 +31,7 @@ export class ProductsController {
 		return this.productsService.createProduct(req, createProductDto);
 	}
 
-	@Patch("id")
+	@Patch(":id")
 	@ApiOperation({
 		summary: "Atualizar parte do produto",
 		description: "Atualizar um produto no sistema.",
@@ -59,7 +59,7 @@ export class ProductsController {
 		return this.productsService.updateProduct(id, updateProductDto);
 	}
 
-	@Delete("id")
+	@Delete(":id")
 	@ApiOperation({
 		summary: "Excluir um produto",
 		description: "Excluir um produto no sistema.",
@@ -83,7 +83,7 @@ export class ProductsController {
 		return this.productsService.removeProductById(id);
 	}
 
-	@Get("id")
+	@Get(":id")
 	@ApiOperation({
 		summary: "Listar produtos por usuario",
 		description: "Listar produtos por usuario no sistema.",
