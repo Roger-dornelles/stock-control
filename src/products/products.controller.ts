@@ -120,7 +120,31 @@ export class ProductsController {
 		});
 	}
 
-	@Get(":id")
+	@Get("/category/:category")
+	@ApiOperation({
+		summary: "Listar produtos por categoria ",
+		description: "Listar produtos por categoria no sistema.",
+	})
+	@ApiParam({
+		name: "category",
+		type: String,
+		description: "Categoria do produto",
+		example: "Bazar",
+	})
+	@ApiBody({
+		description: "Detalhes dos produto",
+		type: CreateProductDto,
+	})
+	@ApiResponse({
+		status: 401,
+		description: "Credenciais inválidas",
+	})
+	@UseGuards(AuthGuard)
+	findAllProductsByCategory(@Param("category") category: string) {
+		return this.productsService.findAllProductsByCategory(category);
+	}
+
+	@Get("/user/:id")
 	@ApiOperation({
 		summary: "Listar produtos por usuario",
 		description: "Listar produtos por usuario no sistema.",
@@ -144,16 +168,16 @@ export class ProductsController {
 		return this.productsService.findAllProductsByUser(userId, req);
 	}
 
-	@Get(":category")
+	@Get("/name/:name")
 	@ApiOperation({
-		summary: "Listar produtos por categoria ",
-		description: "Listar produtos por categoria no sistema.",
+		summary: "Listar produtos por Nome ",
+		description: "Listar produtos por nome no sistema.",
 	})
 	@ApiParam({
-		name: "category",
+		name: "nome",
 		type: String,
-		description: "Categoria do produto",
-		example: "Bazar",
+		description: "Nome do produto",
+		example: "Notebook",
 	})
 	@ApiBody({
 		description: "Detalhes dos produto",
@@ -164,8 +188,8 @@ export class ProductsController {
 		description: "Credenciais inválidas",
 	})
 	@UseGuards(AuthGuard)
-	findAllProductsByCategory(@Param("category") category: string) {
-		return this.productsService.findAllProductsByCategory(category);
+	findAllProductsByName(@Param("name") name: string) {
+		return this.productsService.findAllProductsByName(name);
 	}
 
 	@Get()

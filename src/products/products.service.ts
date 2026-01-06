@@ -7,7 +7,7 @@ import {
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { UsersService } from "../users/users.service";
-import { Between, Not, Repository } from "typeorm";
+import { Between, ILike, Not, Repository } from "typeorm";
 import { Product } from "./entities/product.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 
@@ -33,7 +33,7 @@ export class ProductsService {
 			}
 
 			const productExists = await this.ProductRepository.findOne({
-				where: { productName: createProductDto.productName, userId: user.id },
+				where: { productName: createProductDto.productName.toLowerCase(), userId: user.id },
 			});
 
 			if (productExists) {
@@ -42,6 +42,8 @@ export class ProductsService {
 
 			const product = {
 				...createProductDto,
+				productName: createProductDto.productName.toLowerCase(),
+				categoryProduct: createProductDto.categoryProduct.toLowerCase(),
 				userId: user.id,
 			};
 
@@ -133,6 +135,28 @@ export class ProductsService {
 		}
 	}
 
+	async findAllProductsByCategory(category: string): Promise<Product[]> {
+		try {
+			if (!category) {
+				throw new NotFoundException("Categoria não informada");
+			}
+
+			const products = await this.ProductRepository.find({ where: { categoryProduct: category } });
+
+			if (!products) {
+				throw new NotFoundException("Nenhum produto encontrado para a categoria informada");
+			}
+
+			return products;
+		} catch (error) {
+			if (error instanceof NotFoundException) {
+				throw new NotFoundException(error.message);
+			}
+
+			throw new InternalServerErrorException("Erro ao listar produtos, tente novamente mais tarde");
+		}
+	}
+
 	async findAllProductsByUser(userId: number, req): Promise<Product[]> {
 		try {
 			if (!userId) {
@@ -161,20 +185,21 @@ export class ProductsService {
 		}
 	}
 
-	async findAllProducts(): Promise<Product[]> {
-		return await this.ProductRepository.find();
-	}
-
-	async findAllProductsByCategory(category: string): Promise<Product[]> {
+	async findAllProductsByName(productName: string): Promise<Product[]> {
 		try {
-			if (!category) {
-				throw new NotFoundException("Categoria não informada");
+			if (!productName) {
+				throw new NotFoundException("Nome do produto não informado");
 			}
 
-			const products = await this.ProductRepository.find({ where: { categoryProduct: category } });
+			const products = await this.ProductRepository.find({
+				where: {
+					productName: ILike(`%${productName}%`),
+				},
+				order: { id: "ASC" },
+			});
 
 			if (!products) {
-				throw new NotFoundException("Nenhum produto encontrado para a categoria informada");
+				throw new NotFoundException("Nenhum produto encontrado para o nome informado");
 			}
 
 			return products;
@@ -183,7 +208,13 @@ export class ProductsService {
 				throw new NotFoundException(error.message);
 			}
 
-			throw new InternalServerErrorException("Erro ao listar produtos, tente novamente mais tarde");
+			throw new InternalServerErrorException(
+				"Erro ao listar produtos pelo NOME, tente novamente mais tarde"
+			);
 		}
+	}
+
+	async findAllProducts(): Promise<Product[]> {
+		return await this.ProductRepository.find();
 	}
 }
