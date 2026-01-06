@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, Req, Patch } from "@nestjs/common";
+import {
+	Controller,
+	Get,
+	Post,
+	Body,
+	Param,
+	Delete,
+	UseGuards,
+	Req,
+	Patch,
+	Query,
+} from "@nestjs/common";
 import { ProductsService } from "./products.service";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
@@ -81,6 +92,32 @@ export class ProductsController {
 	@UseGuards(AuthGuard)
 	deleteAProductById(@Param("id") id: number) {
 		return this.productsService.removeProductById(id);
+	}
+
+	@Get("/date")
+	@ApiOperation({
+		summary: "Listar todos os produtos pela data selecionada",
+		description: "Listar todos os produtos do sistema.",
+	})
+	@ApiBody({
+		description: "Detalhes dos produtos selecionados pela data",
+		type: CreateProductDto,
+	})
+	@ApiResponse({
+		status: 401,
+		description: "Credenciais inválidas",
+	})
+	@UseGuards(AuthGuard)
+	findProductsByDate(
+		@Query("date") date?: string,
+		@Query("startDate") startDate?: string,
+		@Query("endDate") endDate?: string
+	) {
+		return this.productsService.findProductsByDate({
+			date,
+			startDate,
+			endDate,
+		});
 	}
 
 	@Get(":id")

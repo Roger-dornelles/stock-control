@@ -1,11 +1,21 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
+import {
+	BadRequestException,
+	Injectable,
+	InternalServerErrorException,
+	NotFoundException,
+} from "@nestjs/common";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { UsersService } from "../users/users.service";
-import { Not, Repository } from "typeorm";
+import { Between, Not, Repository } from "typeorm";
 import { Product } from "./entities/product.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 
+interface FindProductsByDateParams {
+	date?: string;
+	startDate?: string;
+	endDate?: string;
+}
 @Injectable()
 export class ProductsService {
 	constructor(
@@ -87,6 +97,39 @@ export class ProductsService {
 				throw new NotFoundException(error.message);
 			}
 			throw new InternalServerErrorException("Erro ao excluir produto, tente novamente mais tarde");
+		}
+	}
+
+	async findProductsByDate(params: FindProductsByDateParams): Promise<Product[]> {
+		try {
+			let startDate: string;
+			let endDate: string;
+
+			if (params.date) {
+				startDate = params.date;
+				endDate = params.date;
+			} else if (params.startDate && params.endDate) {
+				startDate = params.startDate;
+				endDate = params.endDate;
+			} else {
+				throw new BadRequestException("Informe uma data ou intervalo de datas");
+			}
+
+			return this.ProductRepository.createQueryBuilder("product")
+				.where(`DATE(product.createdAt) BETWEEN :startDate AND :endDate`, {
+					startDate,
+					endDate,
+				})
+				.orderBy("product.createdAt", "ASC")
+				.getMany();
+		} catch (error) {
+			if (error instanceof BadRequestException) {
+				throw error;
+			}
+
+			throw new InternalServerErrorException(
+				"Erro ao listar produtos por DATA, tente novamente mais tarde"
+			);
 		}
 	}
 
