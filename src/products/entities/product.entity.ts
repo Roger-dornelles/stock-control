@@ -31,13 +31,13 @@ export class Product {
 	priceProduct: number;
 
 	@CreateDateColumn({
-		type: "timestamp",
+		type: "timestamptz",
 		name: "created_at",
 	})
 	createdAt: Date;
 
 	@CreateDateColumn({
-		type: "timestamp",
+		type: "timestamptz",
 		name: "updated_at",
 	})
 	updatedAt: Date;
