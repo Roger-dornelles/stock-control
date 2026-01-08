@@ -4,8 +4,9 @@ import { AppService } from "./app.service";
 import { UsersModule } from "./users/users.module";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { AuthModule } from './auth/auth.module';
-import { ProductsModule } from './products/products.module';
+import { AuthModule } from "./auth/auth.module";
+import { ProductsModule } from "./products/products.module";
+import { HealthController } from "./health/health.controller";
 
 @Module({
 	imports: [
@@ -13,24 +14,24 @@ import { ProductsModule } from './products/products.module';
 
 		TypeOrmModule.forRootAsync({
 			imports: [ConfigModule],
+			inject: [ConfigService],
 			useFactory: (config: ConfigService) => ({
 				type: "postgres",
 				host: config.get<string>("SUPABASE_HOST"),
-				port: parseInt(config.get<string>("SUPABASE_PORT") || "5432", 10),
+				port: Number(config.get<string>("SUPABASE_PORT") ?? 5432),
 				username: config.get<string>("SUPABASE_USERNAME"),
 				password: config.get<string>("SUPABASE_PASSWORD"),
 				database: config.get<string>("SUPABASE_DATABASE"),
 				ssl: { rejectUnauthorized: false },
 				entities: [__dirname + "/**/*.entity{.ts,.js}"],
-				synchronize: false, // cuidado: só em dev
+				synchronize: false,
 			}),
-			inject: [ConfigService],
 		}),
 		UsersModule,
 		AuthModule,
 		ProductsModule,
 	],
-	controllers: [AppController],
+	controllers: [AppController, HealthController],
 	providers: [AppService],
 })
 export class AppModule {}
