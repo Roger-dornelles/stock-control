@@ -15,6 +15,7 @@ O controle de estoque é uma atividade crítica que impacta diretamente na opera
 - Bcrypt
 - Passport
 - Class validator
+- Docker
 - Swagger ( documentação )
 
 ## Documentação da APi em SWAGGER
