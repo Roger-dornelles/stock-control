@@ -94,10 +94,4 @@ export class AuthService {
 			throw new InternalServerErrorException("Erro ao realizar login, tente novamente mais tarde.");
 		}
 	}
-
-	@UseGuards(AuthGuard)
-	@Get("profile")
-	getProfile(@Request() req) {
-		return req.user;
-	}
 }
