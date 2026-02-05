@@ -13,6 +13,7 @@ import { CreateAcessToken } from "./dto/createAcessToken.dto";
 import { JwtService } from "@nestjs/jwt";
 import { AuthGuard } from "./auth.guard";
 import * as bcrypt from "bcrypt";
+import { stat } from "fs";
 
 @Injectable()
 export class AuthService {
@@ -85,7 +86,7 @@ export class AuthService {
 				throw new NotFoundException("Usuario sem Autorização");
 			}
 
-			return acessToken;
+			return { accessToken: acessToken, message: "Login realizado com sucesso!", statusCode: 200 };
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				return error.getResponse();
