@@ -29,7 +29,7 @@ export class UsersService {
 			});
 
 			if (userExists) {
-				throw new ConflictException("E-mail já cadastrado no sistema.");
+				throw new NotFoundException("E-mail já cadastrado no sistema.");
 			}
 
 			createUserDto.password = await bcrypt.hashSync(createUserDto.password, 10);

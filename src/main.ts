@@ -14,10 +14,10 @@ async function bootstrap() {
 		.addBearerAuth() // JWT
 		.build();
 
+	await app.listen(process.env.PORT || 3000);
+
 	const document = SwaggerModule.createDocument(app, config);
 	SwaggerModule.setup("api", app, document); // rota http://localhost:3000/api mostra a documentação da API
-
-	await app.listen(3000);
 }
 
 AppDataSource.initialize()
