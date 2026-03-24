@@ -10,12 +10,14 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "./entities/user.entity";
 import { Repository } from "typeorm";
 import { UpdateUserDto } from "./dto/update-user.dto";
+import { JwtService } from "@nestjs/jwt";
 
 @Injectable()
 export class UsersService {
 	constructor(
 		@InjectRepository(User)
-		private userRepository: Repository<User>
+		private userRepository: Repository<User>,
+		private readonly jwtService: JwtService
 	) {}
 
 	async createUser(createUserDto: CreateUserDto) {
@@ -33,15 +35,26 @@ export class UsersService {
 			}
 
 			createUserDto.password = await bcrypt.hashSync(createUserDto.password, 10);
+			const userCreated = await this.userRepository.save(createUserDto);
 
-			const userCreated = this.userRepository.save(createUserDto);
+			if (!userCreated) {
+				throw new NotFoundException('Erro ao registrar usuário...')
+			}
 
-			return userCreated;
+			const payload = { sub: userCreated?.id, username: userCreated?.username };
+
+			const accessToken = await this.jwtService.signAsync(payload);
+
+			if (!accessToken) {
+				throw new InternalServerErrorException("Erro ao gerar token de acesso");
+			}
+			
+			const userWithToken = { ...userCreated, accessToken };
+			return userWithToken;
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw error;
 			}
-
 			throw new InternalServerErrorException("Erro ao criar usuário, tente novamente mais tarde.");
 		}
 	}

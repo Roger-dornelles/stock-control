@@ -7,6 +7,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthModule } from "./auth/auth.module";
 import { ProductsModule } from "./products/products.module";
 import { HealthController } from "./health/health.controller";
+import { JwtModule } from "@nestjs/jwt";
 
 @Module({
 	imports: [
@@ -25,6 +26,15 @@ import { HealthController } from "./health/health.controller";
 				ssl: { rejectUnauthorized: false },
 				entities: [__dirname + "/**/*.entity{.ts,.js}"],
 				synchronize: false,
+			}),
+		}),
+		JwtModule.registerAsync({
+			global: true,
+			imports: [ConfigModule],
+			inject: [ConfigService],
+			useFactory: (config: ConfigService) => ({
+				secret: config.get<string>("JWT_SECRET"),
+				signOptions: { expiresIn: "24h" },
 			}),
 		}),
 		UsersModule,

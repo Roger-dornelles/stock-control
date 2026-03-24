@@ -11,9 +11,7 @@ import { CreateAuthDto } from "./dto/create-auth.dto";
 import { UsersService } from "src/users/users.service";
 import { CreateAcessToken } from "./dto/createAcessToken.dto";
 import { JwtService } from "@nestjs/jwt";
-import { AuthGuard } from "./auth.guard";
 import * as bcrypt from "bcrypt";
-import { stat } from "fs";
 
 @Injectable()
 export class AuthService {
