@@ -1,11 +1,8 @@
 import {
-	Get,
 	Injectable,
 	InternalServerErrorException,
 	NotFoundException,
-	Request,
 	UnauthorizedException,
-	UseGuards,
 } from "@nestjs/common";
 import { CreateAuthDto } from "./dto/create-auth.dto";
 import { UsersService } from "src/users/users.service";
@@ -28,7 +25,7 @@ export class AuthService {
 				throw new UnauthorizedException("Usuario sem Autorização");
 			}
 
-			const payload = { sub: user?.id, username: user?.username };
+			const payload = { sub: user?.id, username: user?.username, role: user?.role };
 
 			const accessToken = await this.jwtService.signAsync(payload);
 
