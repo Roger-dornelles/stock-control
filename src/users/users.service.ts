@@ -11,16 +11,18 @@ import { User } from "./entities/user.entity";
 import { Repository } from "typeorm";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { JwtService } from "@nestjs/jwt";
+import { UploadService } from "src/upload/upload.service";
 
 @Injectable()
 export class UsersService {
 	constructor(
 		@InjectRepository(User)
 		private userRepository: Repository<User>,
-		private readonly jwtService: JwtService
+		private readonly jwtService: JwtService,
+		private readonly uploadService: UploadService
 	) {}
 
-	async createUser(createUserDto: CreateUserDto) {
+	async createUser(createUserDto: CreateUserDto, file: Express.Multer.File) {
 		try {
 			if (createUserDto.role !== "user" && createUserDto.role !== "admin") {
 				throw new NotFoundException("Função inválida. Deve ser 'usuário' ou 'administrador'.");
@@ -34,11 +36,19 @@ export class UsersService {
 				throw new NotFoundException("E-mail já cadastrado no sistema.");
 			}
 
+			if (!file) {
+				throw new NotFoundException("Imagem é obrigatório para o cadastro.");
+			}
+
+			if (file) {
+				createUserDto.avatarUrl = await this.uploadService.uploadFile(file, "avatars");
+			}
+
 			createUserDto.password = await bcrypt.hashSync(createUserDto.password, 10);
 			const userCreated = await this.userRepository.save(createUserDto);
 
 			if (!userCreated) {
-				throw new NotFoundException('Erro ao registrar usuário...')
+				throw new NotFoundException("Erro ao registrar usuário...");
 			}
 
 			const payload = { sub: userCreated?.id, username: userCreated?.username };
@@ -48,7 +58,7 @@ export class UsersService {
 			if (!accessToken) {
 				throw new InternalServerErrorException("Erro ao gerar token de acesso");
 			}
-			
+
 			const userWithToken = { ...userCreated, accessToken };
 			return userWithToken;
 		} catch (error) {
