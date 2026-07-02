@@ -24,4 +24,9 @@ export class CreateUserDto {
 	@IsString()
 	@IsNotEmpty({ message: "Função Obrigatorio, Deve ser Usuario ou Administrador" })
 	role: "user" | "admin";
+
+	@ApiProperty({ example: "avatar.png" })
+	@IsString()
+	@IsNotEmpty({ message: "Avatar Obrigatorio" })
+	avatarUrl?: string;
 }

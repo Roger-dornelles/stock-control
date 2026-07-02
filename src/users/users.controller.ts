@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards, Delete } from "@nestjs/common";
+import {
+	Controller,
+	Get,
+	Post,
+	Body,
+	Patch,
+	Param,
+	UseGuards,
+	Delete,
+	UploadedFile,
+} from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
@@ -26,8 +36,8 @@ export class UsersController {
 		description: "Credenciais de login",
 		type: CreateUserDto,
 	})
-	createUser(@Body() createUserDto: CreateUserDto) {
-		return this.usersService.createUser(createUserDto);
+	createUser(@Body() createUserDto: CreateUserDto, @UploadedFile() file: Express.Multer.File) {
+		return this.usersService.createUser(createUserDto, file);
 	}
 
 	@Get(":id")
