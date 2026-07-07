@@ -8,12 +8,14 @@ import {
 	UseGuards,
 	Delete,
 	UploadedFile,
+	UseInterceptors,
 } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { ApiBody, ApiOperation, ApiParam, ApiResponse } from "@nestjs/swagger";
 import { AuthGuard } from "src/auth/auth.guard";
+import { FileInterceptor } from "@nestjs/platform-express";
 
 @Controller("users")
 export class UsersController {
@@ -36,6 +38,7 @@ export class UsersController {
 		description: "Credenciais de login",
 		type: CreateUserDto,
 	})
+	@UseInterceptors(FileInterceptor("file"))
 	createUser(@Body() createUserDto: CreateUserDto, @UploadedFile() file: Express.Multer.File) {
 		return this.usersService.createUser(createUserDto, file);
 	}
