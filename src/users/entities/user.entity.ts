@@ -22,4 +22,7 @@ export class User {
 		name: "created_at",
 	})
 	createdAt: Date;
+
+	@Column({ nullable: true })
+	fileUrl: string;
 }

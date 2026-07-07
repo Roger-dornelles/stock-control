@@ -3,6 +3,8 @@ import {
 	NotFoundException,
 	ConflictException,
 	InternalServerErrorException,
+	UseInterceptors,
+	UploadedFile,
 } from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
 import * as bcrypt from "bcrypt";
@@ -12,6 +14,7 @@ import { Repository } from "typeorm";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { JwtService } from "@nestjs/jwt";
 import { UploadService } from "src/upload/upload.service";
+import { FileInterceptor } from "@nestjs/platform-express";
 
 @Injectable()
 export class UsersService {
@@ -41,7 +44,8 @@ export class UsersService {
 			}
 
 			if (file) {
-				createUserDto.avatarUrl = await this.uploadService.uploadFile(file, "avatars");
+				const { fileUrl } = await this.uploadService.create(file);
+				createUserDto.fileUrl = await fileUrl;
 			}
 
 			createUserDto.password = await bcrypt.hashSync(createUserDto.password, 10);
