@@ -111,7 +111,11 @@ export class UsersService {
 		}
 	}
 
-	async updateInformationUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+	async updateInformationUser(
+		id: string,
+		updateUserDto: UpdateUserDto,
+		file: Express.Multer.File
+	): Promise<User> {
 		try {
 			const user = await this.userRepository.findOne({ where: { id: Number(id) } });
 
@@ -121,6 +125,14 @@ export class UsersService {
 
 			if (updateUserDto.password) {
 				updateUserDto.password = await bcrypt.hashSync(updateUserDto.password, 10);
+			}
+			if (file) {
+				if (user.fileUrl) {
+					const updatedImage = await this.uploadService.updateImage(file, user.fileUrl);
+					if (updatedImage?.fileUrl) {
+						updateUserDto.fileUrl = await updatedImage.fileUrl;
+					}
+				}
 			}
 
 			const updatedUser = Object.assign(user, updateUserDto);
