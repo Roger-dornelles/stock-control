@@ -22,7 +22,7 @@ O controle de estoque é uma atividade crítica que impacta diretamente na opera
 
 A documentação da API está disponível em Swagger, facilitando o entendimento e a integração dos desenvolvedores com os endpoints e funcionalidades oferecidas.
 
-[Link para documentação da API](https://stock-control-g9wj.onrender.com/api)
+
 
 
 
