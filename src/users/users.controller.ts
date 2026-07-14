@@ -86,8 +86,13 @@ export class UsersController {
 		description: "Credenciais inválidas",
 	})
 	@UseGuards(AuthGuard)
-	upadetUser(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
-		return this.usersService.updateInformationUser(id, updateUserDto);
+	@UseInterceptors(FileInterceptor("file"))
+	upadetUser(
+		@Param("id") id: string,
+		@Body() updateUserDto: UpdateUserDto,
+		@UploadedFile() file: Express.Multer.File
+	) {
+		return this.usersService.updateInformationUser(id, updateUserDto, file);
 	}
 
 	@Delete(":id")
