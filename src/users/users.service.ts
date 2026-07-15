@@ -155,13 +155,18 @@ export class UsersService {
 			if (!user) {
 				throw new NotFoundException("Usuário não encontrado");
 			}
+			const notImageUser = await this.uploadService.deleteFile(user.fileUrl);
+
+			if (!notImageUser) {
+				throw new InternalServerErrorException("Erro ao excluir imagem do usuário");
+			}
 			await this.userRepository.remove(user);
 			return {
 				statusCode: 200,
 				message: "Usuário excluído com sucesso",
 			};
 		} catch (error) {
-			if (error instanceof NotFoundException) {
+			if (error instanceof NotFoundException || error instanceof InternalServerErrorException) {
 				throw error;
 			}
 			throw new InternalServerErrorException(
