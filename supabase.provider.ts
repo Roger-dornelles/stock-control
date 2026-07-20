@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-
+import ws from "ws";
 export const SupabaseProvider = {
 	provide: "SUPABASE_CLIENT",
 	useFactory: () => {
@@ -10,6 +10,14 @@ export const SupabaseProvider = {
 			throw new Error("SUPABASE_URL e SUPABASE_KEY são obrigatórios");
 		}
 
-		return createClient(url, key);
+		return createClient(url, key, {
+			auth: {
+				autoRefreshToken: false,
+				persistSession: false,
+			},
+			realtime: {
+				transport: ws as any,
+			},
+		});
 	},
 };
