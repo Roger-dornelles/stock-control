@@ -26,7 +26,6 @@ export class UploadService {
 			});
 
 		if (error) {
-			console.log("erro supabase storage =================>", error);
 			throw new InternalServerErrorException(`Erro ao fazer upload: ${error.message}`);
 		}
 

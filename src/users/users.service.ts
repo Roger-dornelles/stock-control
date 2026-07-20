@@ -66,7 +66,6 @@ export class UsersService {
 			const userWithToken = { ...userCreated, accessToken };
 			return userWithToken;
 		} catch (error) {
-			console.log("ERROR ==>> ", error);
 			if (error instanceof NotFoundException || error instanceof InternalServerErrorException) {
 				throw error;
 			}
