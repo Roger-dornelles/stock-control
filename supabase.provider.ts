@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
-import ws from "ws";
+
+const ws = require("ws");
+
 export const SupabaseProvider = {
 	provide: "SUPABASE_CLIENT",
 	useFactory: () => {
@@ -16,7 +18,7 @@ export const SupabaseProvider = {
 				persistSession: false,
 			},
 			realtime: {
-				transport: ws as any,
+				transport: ws,
 			},
 		});
 	},
