@@ -66,7 +66,7 @@ export class UsersService {
 			const userWithToken = { ...userCreated, accessToken };
 			return userWithToken;
 		} catch (error) {
-			if (error instanceof NotFoundException) {
+			if (error instanceof NotFoundException || error instanceof InternalServerErrorException) {
 				throw error;
 			}
 			throw new InternalServerErrorException("Erro ao criar usuário, tente novamente mais tarde.");
