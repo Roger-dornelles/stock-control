@@ -7,6 +7,7 @@ import {
 	Query,
 	UseGuards,
 	Put,
+	Req,
 } from "@nestjs/common";
 import { UploadService } from "./upload.service";
 
@@ -37,7 +38,7 @@ export class UploadController {
 	})
 	@UseInterceptors(FileInterceptor("file"))
 	@UseGuards(AuthGuard)
-	create(@UploadedFile() file: Express.Multer.File) {
+	create(@UploadedFile() file: Express.Multer.File, @Req() req: Request) {
 		return this.uploadService.create(file);
 	}
 
