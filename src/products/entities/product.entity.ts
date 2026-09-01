@@ -3,22 +3,22 @@ import { Column, CreateDateColumn, Entity, PrimaryColumn, PrimaryGeneratedColumn
 @Entity({ name: "products" })
 export class Product {
 	@PrimaryGeneratedColumn("increment")
-	id: number;
+	id!: number;
 
 	@Column({ name: "user_id", type: "int", nullable: false })
-	userId: number;
+	userId!: number;
 
 	@Column({ name: "product_name", type: "varchar", length: 100, nullable: false })
-	productName: string;
+	productName!: string;
 
 	@Column({ name: "description_product", type: "text", nullable: false })
-	descriptionProduct: string;
+	descriptionProduct!: string;
 
 	@Column({ name: "category_product", type: "varchar", length: 50, nullable: false })
-	categoryProduct: string;
+	categoryProduct!: string;
 
 	@Column({ name: "quantity_product", type: "int", nullable: false })
-	quantityProduct: number;
+	quantityProduct!: number;
 
 	@Column({
 		name: "price_product",
@@ -28,17 +28,35 @@ export class Product {
 		default: 0,
 		nullable: false,
 	})
-	priceProduct: number;
+	priceProduct!: number;
+
+	@Column({ name: "status", type: "varchar", length: 50, nullable: false })
+	status!: string;
+
+	@Column({ name: "minimum_stock_level", type: "int", nullable: false })
+	minimumStockLevel!: number;
+
+	@Column({ name: "code_product", type: "varchar", length: 50, nullable: false })
+	codeProduct!: string;
+
+	@Column({ name: "request_type", type: "varchar", length: 50, nullable: false })
+	requestType!: string;
 
 	@CreateDateColumn({
 		type: "timestamptz",
 		name: "created_at",
 	})
-	createdAt: Date;
+	createdAt!: Date;
 
 	@CreateDateColumn({
 		type: "timestamptz",
 		name: "updated_at",
 	})
-	updatedAt: Date;
+	updatedAt!: Date;
+
+	@Column({ name: "client_name", type: "varchar", length: 100, nullable: false })
+	clientName!: string;
+
+	@Column({ name: "order_number", type: "varchar", length: 50, nullable: true })
+	orderNumber!: string;
 }

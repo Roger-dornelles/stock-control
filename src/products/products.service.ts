@@ -10,6 +10,9 @@ import { UsersService } from "../users/users.service";
 import { Between, ILike, Not, Repository } from "typeorm";
 import { Product } from "./entities/product.entity";
 import { InjectRepository } from "@nestjs/typeorm";
+import { REQUEST_TYPES } from "src/utils/requesTypes";
+import { StatusCodes } from "src/utils/status";
+import { GenerateOrderNumber } from "src/utils/generateNumberOrder";
 
 interface FindProductsByDateParams {
 	date?: string;
@@ -32,24 +35,35 @@ export class ProductsService {
 				throw new NotFoundException("Usuário sem autorização");
 			}
 
-			const productExists = await this.ProductRepository.findOne({
-				where: { productName: createProductDto.productName.toLowerCase(), userId: user.id },
-			});
-
-			if (productExists) {
-				throw new NotFoundException("Produto já cadastrado.");
+			if (createProductDto.requestType.toLowerCase() !== REQUEST_TYPES.ENTRY.toLowerCase()) {
+				throw new BadRequestException("Tipo de solicitação inválido. Deve ser 'Entrada'.");
 			}
+
+			if (
+				!Object.values(StatusCodes).includes(createProductDto.status as StatusCodes)
+			) {
+				throw new BadRequestException("Status inválido");
+			}
+
+			const newOrder = GenerateOrderNumber();
 
 			const product = {
 				...createProductDto,
 				productName: createProductDto.productName.toLowerCase(),
 				categoryProduct: createProductDto.categoryProduct.toLowerCase(),
+				clientName: createProductDto.clientName.toLowerCase(),
 				userId: user.id,
+				status: createProductDto.status || StatusCodes.COMMERCIAL,
+				codeProduct: createProductDto.codeProduct.toLowerCase(),
+				quantityProduct: createProductDto.quantityProduct,
+				priceProduct: createProductDto.priceProduct,
+				minimumStockLevel: createProductDto.minimumStockLevel || 0,
+				orderNumber: newOrder,
 			};
 
 			return await this.ProductRepository.save(product);
 		} catch (error) {
-			if (error instanceof NotFoundException) {
+			if (error instanceof NotFoundException || error instanceof BadRequestException) {
 				throw new NotFoundException(error.message);
 			}
 			throw new InternalServerErrorException("Erro ao criar produto, tente novamente mais tarde");
