@@ -15,6 +15,7 @@ import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { ApiBody, ApiOperation, ApiParam, ApiResponse } from "@nestjs/swagger";
 import { AuthGuard } from "src/auth/auth.guard";
+import { AddNewProductDto } from "./dto/add-new-product";
 
 @Controller("products")
 export class ProductsController {
@@ -40,6 +41,28 @@ export class ProductsController {
 	@UseGuards(AuthGuard)
 	createProduct(@Req() req, @Body() createProductDto: CreateProductDto) {
 		return this.productsService.createProduct(req, createProductDto);
+	}
+
+	@Post("/new")
+	@ApiOperation({
+		summary: "Adicionar novo produto",
+		description: "Adicionar um novo produto ao sistema.",
+	})
+	@ApiResponse({
+		status: 200,
+		description: "Produto criado com sucesso",
+	})
+	@ApiResponse({
+		status: 401,
+		description: "Credenciais inválidas",
+	})
+	@ApiBody({
+		description: "Detalhes do produto",
+		type: AddNewProductDto,
+	})
+	@UseGuards(AuthGuard)
+	addNewProduct(@Req() req, @Body() addNewProductDto: AddNewProductDto) {
+		return this.productsService.addNewProduct(req, addNewProductDto);
 	}
 
 	@Patch(":id")
