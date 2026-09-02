@@ -13,6 +13,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { REQUEST_TYPES } from "src/utils/requesTypes";
 import { StatusCodes } from "src/utils/status";
 import { GenerateOrderNumber } from "src/utils/generateNumberOrder";
+import { AddNewProductDto } from "./dto/add-new-product";
+import { AddNewProductEntity } from "./entities/addNewProduct.entity";
 
 interface FindProductsByDateParams {
 	date?: string;
@@ -24,7 +26,10 @@ export class ProductsService {
 	constructor(
 		@InjectRepository(Product)
 		private ProductRepository: Repository<Product>,
-		private userService: UsersService
+		private userService: UsersService,
+
+		@InjectRepository(AddNewProductEntity)
+		private AddNewProductRepository: Repository<AddNewProductEntity>
 	) {}
 
 	async createProduct(req, createProductDto: CreateProductDto): Promise<Product> {
@@ -39,9 +44,7 @@ export class ProductsService {
 				throw new BadRequestException("Tipo de solicitação inválido. Deve ser 'Entrada'.");
 			}
 
-			if (
-				!Object.values(StatusCodes).includes(createProductDto.status as StatusCodes)
-			) {
+			if (!Object.values(StatusCodes).includes(createProductDto.status as StatusCodes)) {
 				throw new BadRequestException("Status inválido");
 			}
 
@@ -64,6 +67,44 @@ export class ProductsService {
 			return await this.ProductRepository.save(product);
 		} catch (error) {
 			if (error instanceof NotFoundException || error instanceof BadRequestException) {
+				throw new NotFoundException(error.message);
+			}
+			throw new InternalServerErrorException("Erro ao criar produto, tente novamente mais tarde");
+		}
+	}
+
+	async addNewProduct(req, addNewProductDto: AddNewProductDto): Promise<{ message: string }> {
+		try {
+			const user = await this.userService.findOneUserFromId(req.user.sub);
+
+			const productsLength = await this.AddNewProductRepository.count();
+
+			if (user.role !== "admin") {
+				throw new NotFoundException(
+					"Usuário sem autorização, apenas administradores podem adicionar novos produtos"
+				);
+			}
+
+			const newProduct = {
+				...addNewProductDto,
+				requestType: "Entrada",
+				codeProduct: productsLength + 1,
+			} as AddNewProductDto;
+
+			const newProductAdd = await this.AddNewProductRepository.save(newProduct);
+
+			if (!newProductAdd) {
+				throw new InternalServerErrorException("Erro ao criar produto, tente novamente mais tarde");
+			}
+
+			return { message: "Produto adicionado com sucesso" };
+		} catch (error) {
+			console.log(error as unknown);
+			if (
+				error instanceof NotFoundException ||
+				error instanceof BadRequestException ||
+				error instanceof InternalServerErrorException
+			) {
 				throw new NotFoundException(error.message);
 			}
 			throw new InternalServerErrorException("Erro ao criar produto, tente novamente mais tarde");
