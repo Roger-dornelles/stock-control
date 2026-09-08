@@ -112,34 +112,43 @@ export class ProductsService {
 	}
 
 	async searchDynamicForParams(req, query: { params: string }): Promise<Product[]> {
-		const user = await this.userService.findOneUserFromId(req.user.sub);
+		try {
+			const user = await this.userService.findOneUserFromId(req.user.sub);
 
-		if (user.role !== "admin") {
-			throw new ForbiddenException(
-				"Usuário sem autorização, apenas administradores podem realizar buscas dinâmicas"
+			if (user.role !== "admin") {
+				throw new ForbiddenException(
+					"Usuário sem autorização, apenas administradores podem realizar buscas dinâmicas"
+				);
+			}
+
+			const searchTerm = query.params?.trim();
+
+			if (!searchTerm) {
+				throw new BadRequestException("Informe um termo de busca");
+			}
+
+			// remover % e _ para não interferir na busca do ILIKE
+			const removedCaractersEspecials = searchTerm.replace(/[%_]/g, "\\$&");
+			const queryParams = `%${removedCaractersEspecials.toLowerCase()}%`;
+
+			return await this.ProductRepository.createQueryBuilder("product")
+				.where("product.productName ILIKE :query", { query: queryParams })
+				.orWhere("product.descriptionProduct ILIKE :query", { query: queryParams })
+				.orWhere("product.requestType ILIKE :query", { query: queryParams })
+				.orWhere("product.status ILIKE :query", { query: queryParams })
+				.orWhere("product.categoryProduct ILIKE :query", { query: queryParams })
+				.orWhere("product.codeProduct ILIKE :query", { query: queryParams })
+				.orWhere("product.client_name ILIKE :query", { query: queryParams })
+				.orderBy("product.createdAt", "ASC")
+				.getMany();
+		} catch (error) {
+			if (error instanceof ForbiddenException || error instanceof BadRequestException) {
+				throw new ForbiddenException(error.message);
+			}
+			throw new InternalServerErrorException(
+				"Erro ao realizar busca dinâmica, tente novamente mais tarde"
 			);
 		}
-
-		const searchTerm = query.params?.trim();
-
-		if (!searchTerm) {
-			throw new BadRequestException("Informe um termo de busca");
-		}
-
-		// remover % e _ para não interferir na busca do ILIKE
-		const removedCaractersEspecials = searchTerm.replace(/[%_]/g, "\\$&");
-		const queryParams = `%${removedCaractersEspecials.toLowerCase()}%`;
-
-		return await this.ProductRepository.createQueryBuilder("product")
-			.where("product.productName ILIKE :query", { query: queryParams })
-			.orWhere("product.descriptionProduct ILIKE :query", { query: queryParams })
-			.orWhere("product.requestType ILIKE :query", { query: queryParams })
-			.orWhere("product.status ILIKE :query", { query: queryParams })
-			.orWhere("product.categoryProduct ILIKE :query", { query: queryParams })
-			.orWhere("product.codeProduct ILIKE :query", { query: queryParams })
-			.orWhere("product.client_name ILIKE :query", { query: queryParams })
-			.orderBy("product.createdAt", "ASC")
-			.getMany();
 	}
 
 	async updateProduct(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
