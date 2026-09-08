@@ -1,5 +1,6 @@
 import {
 	BadRequestException,
+	ForbiddenException,
 	Injectable,
 	InternalServerErrorException,
 	NotFoundException,
@@ -56,7 +57,7 @@ export class ProductsService {
 				categoryProduct: createProductDto.categoryProduct.toLowerCase(),
 				clientName: createProductDto.clientName.toLowerCase(),
 				userId: user.id,
-				status: createProductDto.status || StatusCodes.COMMERCIAL,
+				status: createProductDto.status.toLowerCase() || StatusCodes.COMMERCIAL,
 				codeProduct: createProductDto.codeProduct.toLowerCase(),
 				quantityProduct: createProductDto.quantityProduct,
 				priceProduct: createProductDto.priceProduct,
@@ -99,7 +100,6 @@ export class ProductsService {
 
 			return { message: "Produto adicionado com sucesso" };
 		} catch (error) {
-			console.log(error as unknown);
 			if (
 				error instanceof NotFoundException ||
 				error instanceof BadRequestException ||
@@ -108,6 +108,46 @@ export class ProductsService {
 				throw new NotFoundException(error.message);
 			}
 			throw new InternalServerErrorException("Erro ao criar produto, tente novamente mais tarde");
+		}
+	}
+
+	async searchDynamicForParams(req, query: { params: string }): Promise<Product[]> {
+		try {
+			const user = await this.userService.findOneUserFromId(req.user.sub);
+
+			if (user.role !== "admin") {
+				throw new ForbiddenException(
+					"Usuário sem autorização, apenas administradores podem realizar buscas dinâmicas"
+				);
+			}
+
+			const searchTerm = query.params?.trim();
+
+			if (!searchTerm) {
+				throw new BadRequestException("Informe um termo de busca");
+			}
+
+			// remover % e _ para não interferir na busca do ILIKE
+			const removedCaractersEspecials = searchTerm.replace(/[%_]/g, "\\$&");
+			const queryParams = `%${removedCaractersEspecials.toLowerCase()}%`;
+
+			return await this.ProductRepository.createQueryBuilder("product")
+				.where("product.productName ILIKE :query", { query: queryParams })
+				.orWhere("product.descriptionProduct ILIKE :query", { query: queryParams })
+				.orWhere("product.requestType ILIKE :query", { query: queryParams })
+				.orWhere("product.status ILIKE :query", { query: queryParams })
+				.orWhere("product.categoryProduct ILIKE :query", { query: queryParams })
+				.orWhere("product.codeProduct ILIKE :query", { query: queryParams })
+				.orWhere("product.client_name ILIKE :query", { query: queryParams })
+				.orderBy("product.createdAt", "ASC")
+				.getMany();
+		} catch (error) {
+			if (error instanceof ForbiddenException || error instanceof BadRequestException) {
+				throw new ForbiddenException(error.message);
+			}
+			throw new InternalServerErrorException(
+				"Erro ao realizar busca dinâmica, tente novamente mais tarde"
+			);
 		}
 	}
 
