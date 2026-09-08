@@ -232,4 +232,22 @@ export class ProductsController {
 	findAllProducts() {
 		return this.productsService.findAllProducts();
 	}
+
+	@Get("/search")
+	@ApiOperation({
+		summary: "Pesquisar produtos dinamicamente",
+		description: "Pesquisar produtos no sistema com base em critérios dinâmicos.",
+	})
+	@ApiResponse({
+		status: 401,
+		description: "Credenciais inválidas",
+	})
+	@ApiBody({
+		description: "Detalhes dos produtos Ex: Categoria, Status, Ordem de serviço",
+		type: CreateProductDto,
+	})
+	@UseGuards(AuthGuard)
+	searchDynamicForParams(@Req() req, @Query() query: any) {
+		return this.productsService.searchDynamicForParams(req, query);
+	}
 }
